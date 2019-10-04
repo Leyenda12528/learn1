@@ -1,0 +1,113 @@
+ REGISTRARSE en PC
+
+git config --global user.name "<nombre para identificarse>"
+git config --global user.email "<un correo>"
+git config --global --list  --> ver nuestros datos
+
+VER datos
+git config --global --list
+
+
+LIMPIAR PANTALLA
+	clear
+INICIAR REPOSITORIO LOCAL GIT
+	git init
+
+BAJAR REPOSITORIO de GITHUB  al directorio actual (Ejemplo)
+	cd Desktop
+	git clone <url>  --> automaticamente crea una carpeta con el nombre del repositorio
+
+
+HACEN CAMBIOS en el archivo
+GUARDARLOS 
+	git add .   O git add -A  --> los dos hacen lo mismo
+	git commit -m "<comentario>"
+
+VER ESTADO DEL TRABAJO
+	git status
+
+VER LOS COMMITS REALIZADOS
+	git log --> para salir de la vista ingresar ":q"
+	git lod --> ver los commits solo nombres
+
+SUBIR REPOSITORIO LOCAL A GITHUB REPOSITORIO REMOTO
+	git remote add origin <url>
+	git push -u origin master
+
+SUBIR CAMBIOS A GITHUB 
+	git push origin master --> si da error primero BAJAR CAMBIOS / ACTUALIZAR
+
+
+BAJAR CAMBIOS HECHOS POR OTRA PERSONA / ACTUALIZAR
+	git fetch origin
+	git merge origin/master   --> para salir de la vista ingresar ":q"
+
+
+
+REGRESAR AL COMMIT ANTERIOR
+	git reset --hard HEAD~1 --> Borrar los commits posteriores -->alt+4(numeral de arriba)=~ 
+	git reset --soft HEAD~1 --> Regresa un commit anterior pero los commits posteriores siguen 
+				    en la rama intactos y aparacen como listos para hacer commit
+
+
+**********************************************************************
+**********************************************************************
+**********************************************************************
+RAMAS
+ver las ramas exitentes
+	git branch
+	git branch --all --> ver todas las ramas incluso ocultas
+
+	git branch -r --> solo ramas remotas
+	git branch -a --> todas las ramas
+	git branch -vv --> todas ramas asociadas
+	git fetch origin nombreramaRemota:Ramalocal --> baja la rama remota con sus cambios y los copia a una rama local no asociada
+
+crear nueva rama y despues moverse
+	git branch <nombre nueva rama>     --> crear una rama nueva
+	git checkout <nombre nueva rama>   --> moverse a la nueva rama
+
+crear nueva rama(rama2)  y moverse de un solo
+	git chechout -b <name new branch>
+
+
+**************************SIRVE para hacer prueba en el proyecto y posteriormente subirlos a GITHUB
+----se hacen cambios en nueva rama(rama2)
+	git add.
+	git commit -m "comentario"
+
+
+Los cambios que se hagan en la nueva rama (rama2) no afectan a las otras ramas (master)
+Si los cambios hechos son sastifactorios moverlos a la rama(master) para subirlos despues
+Sino seguir modificando o borrar la nueva rama (rama2)
+
+
+
+Mover los cambios de la nueva rama(rama2) a otra rama (master)
+
+Moverse primero a la otra rama (master) que va a absorber a "rama2"  y despues mover los cambios
+	git checkout master
+	git merge rama2     
+
+--> ahora rama "master" tiene los cambios de la "rama2"
+--> y posteriormente subirlos a GITHUB 
+	
+	
+****BORRAR RAMA
+	git checkout master    				--> moverse a la rama principal
+	git branch -D <nombre de la rama a eliminar>	--> borrar la rama nueva
+
+******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+ BORRAR CREDENCIALES DE CONSOLA	
+	https://codeday.me/es/qa/20190414/495405.html
+git credential-manager delete https://github.com
+
+
+
+
+
+
+
+
+
