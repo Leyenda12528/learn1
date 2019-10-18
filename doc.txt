@@ -103,7 +103,171 @@ Moverse primero a la otra rama (master) que va a absorber a "rama2"  y despues m
 	https://codeday.me/es/qa/20190414/495405.html
 git credential-manager delete https://github.com
 
+******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
+var calendario = new Vue({
+	components: {
+		vueCal: vuecal
+	},
+	el: "#app",
+	data: {
+		events: [
+			{
+				start: "2019-10-16 10:30",
+				end: "2019-10-16 11:30",
+				title: "Need to go shopping",
+				content: '<i class="v-icon material-icons">shopping_cart</i>',
+				class: "leisure"
+			}
+		]
+	}
+});
+
+var entrada = new Vue({
+	el: "#entrada",
+	data: {
+		dado: 0,
+		tarea: "",
+		fechai: "",
+		horai: "",
+
+		horaF: [
+			{
+				valor: "",
+				read: true,
+				min: ""
+			}
+		],
+
+		recordar: [
+			{
+				valor: 1,
+				read: true,
+				tipo: "0",
+				readValor: true
+			}
+		],
+		addT: "Añadir"
+	},
+	methods: {
+		verHoraF() {
+			if (this.horaF[0].read) {
+				this.horaF[0].read = false;
+				this.horaF[0].min = this.horai;
+			} else {
+				this.horaF[0].read = true;
+				this.horaF[0].min = "";
+				this.horaF[0].valor = "";
+			}
+		},
+		verRecordar() {
+			if (this.recordar[0].read) {
+				this.recordar[0].read = false;
+				this.recordar[0].tipo = this.dado;
+			} else {
+				this.recordar[0].tipo = 0;
+				this.recordar[0].read = true;
+			}
+		},
+		tipoRecordar(tipo) {
+			this.dado = tipo;
+			this.recordar[0].tipo = this.dado;
+			this.recordar[0].readValor = false;
+		},
+		//Agregar Tarea
+		addTarea() {
+			console.log("click");
+			var formdata = new FormData();
+			formdata.append("nombre", this.tarea);
+			formdata.append("fecha", this.fechai);
+			axios
+				.post("http://localhost/Calendario/index.php/calendario/save", formdata)
+				.then(response => {
+					console.log(response.data);
+				});
+		}
+	}
+});
+
+
+    public function save()
+    {
+        $data = array(
+            'nombre' => $this->input->post('nombre'),
+            'fecha' => $this->input->post('fecha'),
+        );
+        //echo $this->input->post('fecha');
+        $datos = json_encode($data);
+        echo $datos;
+    }
+
+******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+<div class="card-body" id="entrada">
+                        <div>
+                            <div class="form-group">
+                                <input type="text" v-model="tarea" name="" id="" class="form-control"
+                                    placeholder="Nombre Tarea" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="">Fecha evento</label>
+                                <input type="date" v-model="fechai" name="" id="" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="">Hora inicial</label>
+                                <input type="time" v-model="horai" name="hi" id="hi" class="form-control" min="06:00"
+                                    max="17:30" step="600" required>
+
+                                <h2>{{horai}}</h2>
+                            </div>
+                            <!-- hora final -->
+                            <div class="form-group">
+                                <label><input v-on:click="verHoraF" type="checkbox" name="" id="">Hora final</label>
+                                <input type="time" v-model="horaF[0].valor" name="dd" id="dd" class="form-control"
+                                    :readonly="horaF[0].read" :min="horaF[0].min" max="18:00"
+                                    :required="!horaF[0].read">
+                            </div>
+
+                            <!-- recordar -->
+                            <div class="form-group">
+                                <label><input v-on:click="verRecordar" type="checkbox" name="" id="">¿ Recordar
+                                    ?</label>
+                            </div>
+                            <div :class="['form-group', recordar[0].read ? 'clase' : '']">
+                                <!-- Opcion DIAS o HORAS -->
+                                <div class="d-flex justify-content-around">
+                                    <div>
+                                        <input type="radio" id="dias" name="recordar" value="dias"
+                                            v-on:click="tipoRecordar('1')">
+                                        <label for="dias">Dias</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" id="horas" name="recordar" value="horas"
+                                            v-on:click="tipoRecordar('2')">
+                                        <label for="horas">Horas</label>
+                                    </div>
+                                </div>
+                                <!-- FIN Opcion DIAS o HORAS -->
+                                <div class="form-group">
+                                    <label for="tiempo"><b>Tiempo de anticipacion</b></label>
+                                    <input type="number" v-model="recordar[0].valor" name="" id="tiempo"
+                                        class="form-control" min="1" :readonly="recordar[0].readValor"
+                                        :required="!recordar[0].read">
+                                </div>
+                            </div>
+                            <!-- fin recordar -->
+                            <div class="form-group">
+                                <h6>tipo {{recordar[0].tipo}}</h6>
+                                <h6>dado {{dado}}</h6>
+                                <input type="submit" v-model="addT" value="enviar" v-on:click="addTarea"
+                                    :class="['form-control', 'btn', (recordar[0].tipo == 0) ? 'btn-primary': (recordar[0].tipo == 1) ? 'btn-success': 'btn-danger']">
+                            </div>
+                        </div>
+
+                    </div>
+
+
+******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
 
 
