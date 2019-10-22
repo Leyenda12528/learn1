@@ -105,6 +105,8 @@ git credential-manager delete https://github.com
 
 ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
+
+
 var calendario = new Vue({
 	components: {
 		vueCal: vuecal
@@ -126,57 +128,267 @@ var calendario = new Vue({
 var entrada = new Vue({
 	el: "#entrada",
 	data: {
-		dado: 0,
-		tarea: "",
-		fechai: "",
-		horai: "",
-
-		horaF: [
-			{
-				valor: "",
-				read: true,
-				min: ""
-			}
-		],
-
-		recordar: [
-			{
-				valor: 1,
-				read: true,
-				tipo: "0",
-				readValor: true
-			}
-		],
-		addT: "Añadir"
+		Tarea: {
+			valor: "",
+			clase: ""
+		},
+		Fechai: {
+			valor: "",
+			clase: "",
+			mjs: ""
+		},
+		Horai: {
+			valor: "",
+			clase: "",
+			min: "06:00",
+			max: "17:30",
+			mjs: ""
+		},
+		HoraF: {
+			valor: "",
+			clase: "",
+			editar: true,
+			min: "",
+			max: "18:00"
+		},
+		Recordar: {
+			valor: 1,
+			clase: "",
+			tipo: 3,
+			ver: true,
+			c1: false,
+			dado: 3,
+			mjs: ""
+		},
+		addT: "Añadir",
+		correcto: false
 	},
 	methods: {
+		//Poner la Hora Final
 		verHoraF() {
-			if (this.horaF[0].read) {
-				this.horaF[0].read = false;
-				this.horaF[0].min = this.horai;
+			if (this.HoraF.editar) {
+				this.HoraF.editar = false;
+				this.HoraF.min = this.Horai.valor;
 			} else {
-				this.horaF[0].read = true;
-				this.horaF[0].min = "";
-				this.horaF[0].valor = "";
+				this.HoraF.editar = true;
+				this.HoraF.min = "";
+				this.HoraF.valor = "";
+				this.HoraF.clase = "";
 			}
 		},
+		//Ver para Recordatorio
 		verRecordar() {
-			if (this.recordar[0].read) {
-				this.recordar[0].read = false;
-				this.recordar[0].tipo = this.dado;
+			if (this.Recordar.ver) {
+				this.Recordar.ver = false;
+				if (this.Recordar.dado == 3) {
+					this.Recordar.c1 = true;
+					this.Recordar.tipo = 2;
+					this.Recordar.dado = 2;
+				} else {
+					this.Recordar.tipo = this.Recordar.dado;
+				}
 			} else {
-				this.recordar[0].tipo = 0;
-				this.recordar[0].read = true;
+				this.Recordar.ver = true;
+				this.Recordar.tipo = 3;
 			}
 		},
+		//Tipo Recordatorio
 		tipoRecordar(tipo) {
-			this.dado = tipo;
-			this.recordar[0].tipo = this.dado;
-			this.recordar[0].readValor = false;
+			this.Recordar.dado = tipo;
+			this.Recordar.tipo = this.Recordar.dado;
+		},
+
+		//	VALIDAR TAREA
+		validar() {
+			this.Tarea.clase = this.Tarea.valor == "" ? "is-invalid" : "";
+			//validar fecha
+			this.Fechai.clase = this.Fechai.valor == "" ? "is-invalid" : "";
+			if (this.Fechai.valor != "") {
+				var fecha = new Date();
+				fecha =
+					fecha.getFullYear() +
+					"-" +
+					String(fecha.getMonth() + 1).padStart(2, "0") +
+					"-" +
+					String(fecha.getDate()).padStart(2, "0");
+				var fecha2 = new Date();
+				fecha2 =
+					String(fecha2.getDate() - 1).padStart(2, "0") +
+					"/" +
+					String(fecha2.getMonth() + 1).padStart(2, "0") +
+					"/" +
+					fecha2.getFullYear();
+				//console.log(this.Fechai.valor);
+				if (this.Fechai.valor < fecha) {
+					this.Fechai.clase = "is-invalid";
+					this.Fechai.mjs = "La fecha del evento debe ser mayor a " + fecha2;
+					this.correcto = false;
+				} else {
+					this.Fechai.clase = "";
+					this.Fechai.mjs = "";
+					this.correcto = true;
+				}
+				//------------
+			}
+			//Validar hora inicial
+			this.Horai.clase = this.Horai.valor == "" ? "is-invalid" : "";
+			if (this.Horai.valor != "") {
+				if (
+					this.Horai.valor < this.Horai.min ||
+					this.Horai.valor > this.Horai.max
+				) {
+					this.Horai.mjs =
+						"La hora debe ser mayor a " +
+						this.Horai.min +
+						" y menor a " +
+						this.Horai.max;
+					this.Horai.clase = "is-invalid";
+					this.correcto = false;
+				} else {
+					this.Horai.mjs = "";
+					this.Horai.clase = "";
+					this.correcto = true;
+				}
+			}
+			//Validar hora final
+			if (this.Horai.valor == "" && this.HoraF.editar == false) {
+				this.HoraF.clase = "is-invalid";
+				this.HoraF.mjs = "Ingrese primero la fecha de inicio";
+				this.correcto = false;
+			} else if (this.Horai.valor != "" && this.HoraF.editar == false) {
+				if (
+					this.Horai.valor < this.Horai.min ||
+					this.Horai.valor > this.Horai.max
+				) {
+					this.HoraF.clase = "is-invalid";
+					this.HoraF.mjs = "Verifique la Hora de Inicio";
+				} else {
+					if (this.HoraF.valor != "") {
+						this.HoraF.min = this.Horai.valor;
+						if (
+							this.HoraF.valor < this.HoraF.min ||
+							this.HoraF.valor > this.HoraF.max
+						) {
+							this.HoraF.mjs =
+								"La hora debe ser mayor a " +
+								this.HoraF.min +
+								" y menor a " +
+								this.HoraF.max;
+							this.HoraF.clase = "is-invalid";
+							this.correcto = false;
+						} else {
+							this.HoraF.mjs = "";
+							this.HoraF.clase = "";
+							this.correcto = true;
+						}
+					} else {
+						this.HoraF.clase = "is-invalid";
+						this.HoraF.mjs = "";
+						this.correcto = false;
+					}
+				}
+			} else {
+				this.HoraF.mjs = "";
+				this.HoraF.clase = "";
+			}
+			//Validar Recordatorio
+			if (!this.Recordar.ver) {
+				if (this.Fechai.valor != "") {
+					var fecha = new Date();
+					fecha =
+						fecha.getFullYear() +
+						"-" +
+						String(fecha.getMonth() + 1).padStart(2, "0") +
+						"-" +
+						String(fecha.getDate()).padStart(2, "0");
+					//console.log(this.Fechai.valor);
+					if (this.Fechai.valor < fecha) {
+						this.Recordar.clase = "is-invalid";
+						this.Recordar.mjs = "Verifique la Fecha del evento";
+					} else {
+						if (this.Recordar.valor > 0) {
+							//validar HORA Inicio
+							if (
+								this.Horai.valor < this.Horai.min ||
+								this.Horai.valor > this.Horai.max
+							) {
+								this.Recordar.clase = "is-invalid";
+								this.Recordar.mjs = "Verifique la Hora de Inicio";
+							} else {
+								//validar tiempo de recordatorio TIPO
+								if (this.Recordar.tipo == 1) {
+									// RECORDAR  POR DIAS
+									if (this.Fechai.valor == fecha) {
+										this.Recordar.clase = "is-invalid";
+										this.Recordar.mjs =
+											"La fecha del evento es hoy mismo, no es posible recordar por dias";
+									} else {
+										this.Recordar.clase = "";
+										this.Recordar.mjs = "";
+									}
+								} else if (this.Recordar.tipo == 2) {
+									//1º ver si es la misma fecha
+									var today = new Date();
+									var time =
+										String(today.getHours()).padStart(2, "0") +
+										":" +
+										today.getMinutes();
+									if (this.Fechai.valor == fecha) {
+										var lapso = this.Horai.valor - time;
+										var ato = new Date().getTime();
+										console.log(ato);
+									} else {
+									}
+									// RECORDAR  POR HORAS
+									if (this.Horai.valor < time) {
+									} else {
+									}
+								} else {
+									this.Recordar.clase = "";
+									this.Recordar.mjs = "";
+									this.correcto = true;
+								}
+							}
+						} else {
+							this.Recordar.clase = "is-invalid";
+							this.Recordar.mjs = "Ingrese una cantidad positiva";
+						}
+					}
+					//------------
+				} else {
+					this.Recordar.clase = "is-invalid";
+					this.Recordar.mjs = "Ingrese una Fecha del evento";
+				}
+			}
 		},
 		//Agregar Tarea
 		addTarea() {
+			this.validar();
+
+			var today = new Date();
+			var time =
+				String(today.getHours()).padStart(2, "0") + ":" + today.getMinutes();
+			var lapso = this.Horai.valor - time;
+			var ato = new Date(time);
+			console.log(ato);
+
+			var now = "04/09/2013 15:00:00";
+			var then = "02/09/2013 14:20:30";
+
+			var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
+				moment(then, "DD/MM/YYYY HH:mm:ss")
+			);
+			var d = moment.duration(ms);
+			var s = d.format("hh:mm:ss");
+			console.log(s);
+			/*
+			if (this.correcto) {
+			} else {
+				alert("Datos mal Ingresados");
+			}*/
 			console.log("click");
+			/*
+			
 			var formdata = new FormData();
 			formdata.append("nombre", this.tarea);
 			formdata.append("fecha", this.fechai);
@@ -185,10 +397,14 @@ var entrada = new Vue({
 				.then(response => {
 					console.log(response.data);
 				});
+				*/
 		}
 	}
 });
 
+
+
+-----------------------------------------------------------------------------------------------------------
 
     public function save()
     {
@@ -202,65 +418,91 @@ var entrada = new Vue({
     }
 
 ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-<div class="card-body" id="entrada">
+ <div class="card-body" id="entrada">
                         <div>
+                            <!--Nombre Tarea-->
                             <div class="form-group">
-                                <input type="text" v-model="tarea" name="" id="" class="form-control"
-                                    placeholder="Nombre Tarea" required>
+                                <label for="">Nombrea Tarea</label>
+                                <input type="text" v-model="Tarea.valor" class="form-control" :class="[Tarea.clase]"
+                                    placeholder="Nombre Tarea">
+                                <span v-show="Tarea.clase" class="text-danger"><b>Campo Requerido </b></span>
                             </div>
+                            <!--Fecha Tarea-->
 
                             <div class="form-group">
                                 <label for="">Fecha evento</label>
-                                <input type="date" v-model="fechai" name="" id="" class="form-control">
+                                <input type="date" v-model="Fechai.valor" class="form-control" :class="[Fechai.clase]">
+                                <span v-show="Fechai.clase" class="text-danger"><b>Campo Requerido
+                                    </b>{{Fechai.mjs}}</span>
                             </div>
+                            <!--Hora inicial-->
                             <div class="form-group">
                                 <label for="">Hora inicial</label>
-                                <input type="time" v-model="horai" name="hi" id="hi" class="form-control" min="06:00"
-                                    max="17:30" step="600" required>
-
-                                <h2>{{horai}}</h2>
+                                <input type="time" v-model="Horai.valor" class="form-control" :class="[Horai.clase]"
+                                    step="600">
+                                <span v-show="Horai.clase" class="text-danger"><b>Campo Requerido</b>
+                                    {{Horai.mjs}}</span>
+                                <h4>Valor - {{Horai.valor}}</h4>
+                                <h4>Clase - {{Horai.clase}}</h4>
+                                <h4>min - {{Horai.min}}</h4>
+                                <h4>max - {{Horai.max}}</h4>
+                                <h4>mjs - {{Horai.mjs}}</h4>
                             </div>
                             <!-- hora final -->
                             <div class="form-group">
-                                <label><input v-on:click="verHoraF" type="checkbox" name="" id="">Hora final</label>
-                                <input type="time" v-model="horaF[0].valor" name="dd" id="dd" class="form-control"
-                                    :readonly="horaF[0].read" :min="horaF[0].min" max="18:00"
-                                    :required="!horaF[0].read">
+                                <label><input v-on:click="verHoraF" type="checkbox">Hora final</label>
+                                <input type="time" v-model="HoraF.valor" class="form-control" :class="[HoraF.clase]"
+                                    :readonly="HoraF.editar" step="600">
+                                <span v-show="HoraF.clase" class="text-danger"><b>Campo Requerido </b>{{HoraF.mjs}}
+                                </span>
+                                <h4>Valor - {{HoraF.valor}}</h4>
+                                <h4>Clase - {{HoraF.clase}}</h4>
+                                <h4>Ver - {{HoraF.editar}}</h4>
+                                <h4>min - {{HoraF.min}}</h4>
+                                <h4>max - {{HoraF.max}}</h4>
+                                <h4>mjs - {{HoraF.mjs}}</h4>
                             </div>
 
                             <!-- recordar -->
                             <div class="form-group">
-                                <label><input v-on:click="verRecordar" type="checkbox" name="" id="">¿ Recordar
+                                <label><input v-on:click="verRecordar" type="checkbox">¿ Recordar
                                     ?</label>
                             </div>
-                            <div :class="['form-group', recordar[0].read ? 'clase' : '']">
+                            <div :class="['form-group', Recordar.ver ? 'clase' : '']">
                                 <!-- Opcion DIAS o HORAS -->
                                 <div class="d-flex justify-content-around">
+                                    <div>
+                                        <input type="radio" id="horas" name="recordar" value="horas"
+                                            v-on:click="tipoRecordar('2')" :checked="Recordar.c1">
+                                        <label for="horas">Horas</label>
+                                    </div>
                                     <div>
                                         <input type="radio" id="dias" name="recordar" value="dias"
                                             v-on:click="tipoRecordar('1')">
                                         <label for="dias">Dias</label>
                                     </div>
-                                    <div>
-                                        <input type="radio" id="horas" name="recordar" value="horas"
-                                            v-on:click="tipoRecordar('2')">
-                                        <label for="horas">Horas</label>
-                                    </div>
                                 </div>
                                 <!-- FIN Opcion DIAS o HORAS -->
                                 <div class="form-group">
                                     <label for="tiempo"><b>Tiempo de anticipacion</b></label>
-                                    <input type="number" v-model="recordar[0].valor" name="" id="tiempo"
-                                        class="form-control" min="1" :readonly="recordar[0].readValor"
-                                        :required="!recordar[0].read">
+                                    <input type="number" v-model="Recordar.valor" class="form-control" min="0"
+                                        :class="[Recordar.clase]">
+                                    <span v-show="Recordar.clase" class="text-danger"><b>Campo Requerido
+                                        </b>{{Recordar.mjs}}
                                 </div>
                             </div>
+                            <h4>Valor - {{Recordar.valor}}</h4>
+                            <h4>Clase - {{Recordar.clase}}</h4>
+                            <h4>Ver - {{Recordar.ver}}</h4>
+                            <h4>tipo - {{Recordar.tipo}}</h4>
+                            <h4>C1 - {{Recordar.c1}}</h4>
                             <!-- fin recordar -->
+
                             <div class="form-group">
-                                <h6>tipo {{recordar[0].tipo}}</h6>
-                                <h6>dado {{dado}}</h6>
+                                <h6>tipo {{Recordar.tipo}}</h6>
+                                <h6>dado {{Recordar.dado}}</h6>
                                 <input type="submit" v-model="addT" value="enviar" v-on:click="addTarea"
-                                    :class="['form-control', 'btn', (recordar[0].tipo == 0) ? 'btn-primary': (recordar[0].tipo == 1) ? 'btn-success': 'btn-danger']">
+                                    :class="['form-control', 'btn', (Recordar.tipo == 3) ? 'btn-primary': (Recordar.tipo == 2) ? 'btn-warning': 'btn-danger']">
                             </div>
                         </div>
 
