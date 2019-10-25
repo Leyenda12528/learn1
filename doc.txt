@@ -106,22 +106,25 @@ git credential-manager delete https://github.com
 ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
 
-
 var calendario = new Vue({
 	components: {
 		vueCal: vuecal
 	},
 	el: "#app",
 	data: {
-		events: [
-			{
-				start: "2019-10-16 10:30",
-				end: "2019-10-16 11:30",
-				title: "Need to go shopping",
-				content: '<i class="v-icon material-icons">shopping_cart</i>',
-				class: "leisure"
-			}
-		]
+		selectedEvent: {},
+		showDialog: false,
+		events: []
+	},
+	methods: {
+		onEventClick(event, e) {
+			this.selectedEvent = event
+			this.showDialog = true
+			console.log("hola -> " + this.selectedEvent.title);
+			$("#modalEditar").modal("show");
+			// Prevent navigating to narrower view (default vue-cal behavior).
+			e.stopPropagation()
+		}
 	}
 });
 
@@ -130,7 +133,8 @@ var entrada = new Vue({
 	data: {
 		Tarea: {
 			valor: "",
-			clase: ""
+			clase: "",
+			mjs: ""
 		},
 		Fechai: {
 			valor: "",
@@ -161,7 +165,8 @@ var entrada = new Vue({
 			mjs: ""
 		},
 		addT: "Añadir",
-		correcto: false
+		correcto: false,
+		Matter: false
 	},
 	methods: {
 		//Poner la Hora Final
@@ -203,33 +208,7 @@ var entrada = new Vue({
 			this.Tarea.clase = this.Tarea.valor == "" ? "is-invalid" : "";
 			//validar fecha
 			this.Fechai.clase = this.Fechai.valor == "" ? "is-invalid" : "";
-			if (this.Fechai.valor != "") {
-				var fecha = new Date();
-				fecha =
-					fecha.getFullYear() +
-					"-" +
-					String(fecha.getMonth() + 1).padStart(2, "0") +
-					"-" +
-					String(fecha.getDate()).padStart(2, "0");
-				var fecha2 = new Date();
-				fecha2 =
-					String(fecha2.getDate() - 1).padStart(2, "0") +
-					"/" +
-					String(fecha2.getMonth() + 1).padStart(2, "0") +
-					"/" +
-					fecha2.getFullYear();
-				//console.log(this.Fechai.valor);
-				if (this.Fechai.valor < fecha) {
-					this.Fechai.clase = "is-invalid";
-					this.Fechai.mjs = "La fecha del evento debe ser mayor a " + fecha2;
-					this.correcto = false;
-				} else {
-					this.Fechai.clase = "";
-					this.Fechai.mjs = "";
-					this.correcto = true;
-				}
-				//------------
-			}
+
 			//Validar hora inicial
 			this.Horai.clase = this.Horai.valor == "" ? "is-invalid" : "";
 			if (this.Horai.valor != "") {
@@ -294,65 +273,24 @@ var entrada = new Vue({
 			//Validar Recordatorio
 			if (!this.Recordar.ver) {
 				if (this.Fechai.valor != "") {
-					var fecha = new Date();
-					fecha =
-						fecha.getFullYear() +
-						"-" +
-						String(fecha.getMonth() + 1).padStart(2, "0") +
-						"-" +
-						String(fecha.getDate()).padStart(2, "0");
-					//console.log(this.Fechai.valor);
-					if (this.Fechai.valor < fecha) {
-						this.Recordar.clase = "is-invalid";
-						this.Recordar.mjs = "Verifique la Fecha del evento";
-					} else {
-						if (this.Recordar.valor > 0) {
-							//validar HORA Inicio
-							if (
-								this.Horai.valor < this.Horai.min ||
-								this.Horai.valor > this.Horai.max
-							) {
-								this.Recordar.clase = "is-invalid";
-								this.Recordar.mjs = "Verifique la Hora de Inicio";
-							} else {
-								//validar tiempo de recordatorio TIPO
-								if (this.Recordar.tipo == 1) {
-									// RECORDAR  POR DIAS
-									if (this.Fechai.valor == fecha) {
-										this.Recordar.clase = "is-invalid";
-										this.Recordar.mjs =
-											"La fecha del evento es hoy mismo, no es posible recordar por dias";
-									} else {
-										this.Recordar.clase = "";
-										this.Recordar.mjs = "";
-									}
-								} else if (this.Recordar.tipo == 2) {
-									//1º ver si es la misma fecha
-									var today = new Date();
-									var time =
-										String(today.getHours()).padStart(2, "0") +
-										":" +
-										today.getMinutes();
-									if (this.Fechai.valor == fecha) {
-										var lapso = this.Horai.valor - time;
-										var ato = new Date().getTime();
-										console.log(ato);
-									} else {
-									}
-									// RECORDAR  POR HORAS
-									if (this.Horai.valor < time) {
-									} else {
-									}
-								} else {
-									this.Recordar.clase = "";
-									this.Recordar.mjs = "";
-									this.correcto = true;
-								}
-							}
-						} else {
+					//------------
+					if (this.Recordar.valor > 0) {
+						//validar HORA Inicio
+						if (
+							this.Horai.valor < this.Horai.min ||
+							this.Horai.valor > this.Horai.max
+						) {
 							this.Recordar.clase = "is-invalid";
-							this.Recordar.mjs = "Ingrese una cantidad positiva";
+							this.Recordar.mjs = "Verifique la Hora de Inicio";
+						} else {
+							//CORRECTO
+							this.Recordar.clase = "";
+							this.Recordar.mjs = "";
+							this.correcto = true;
 						}
+					} else {
+						this.Recordar.clase = "is-invalid";
+						this.Recordar.mjs = "Ingrese una cantidad positiva";
 					}
 					//------------
 				} else {
@@ -362,42 +300,147 @@ var entrada = new Vue({
 			}
 		},
 		//Agregar Tarea
+		/*
+		<h4>Valor - {{Horai.valor}}</h4>
+                                <h4>Clase - {{Horai.clase}}</h4>
+                                <h4>min - {{Horai.min}}</h4>
+                                <h4>max - {{Horai.max}}</h4>
+                                <h4>mjs - {{Horai.mjs}}</h4>
+		<h4>Valor - {{HoraF.valor}}</h4>
+                                <h4>Clase - {{HoraF.clase}}</h4>
+                                <h4>Ver - {{HoraF.editar}}</h4>
+                                <h4>min - {{HoraF.min}}</h4>
+                                <h4>max - {{HoraF.max}}</h4>
+                                <h4>mjs - {{HoraF.mjs}}</h4>
+		<h6>tipo {{Recordar.tipo}}</h6>
+                                <h6>dado {{Recordar.dado}}</h6>
+		<h4>Valor - {{Recordar.valor}}</h4>
+                            <h4>Clase - {{Recordar.clase}}</h4>
+                            <h4>Ver - {{Recordar.ver}}</h4>
+                            <h4>tipo - {{Recordar.tipo}}</h4>
+                            <h4>C1 - {{Recordar.c1}}</h4>
+		*/
 		addTarea() {
 			this.validar();
-
-			var today = new Date();
-			var time =
-				String(today.getHours()).padStart(2, "0") + ":" + today.getMinutes();
-			var lapso = this.Horai.valor - time;
-			var ato = new Date(time);
-			console.log(ato);
-
-			var now = "04/09/2013 15:00:00";
-			var then = "02/09/2013 14:20:30";
-
-			var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
-				moment(then, "DD/MM/YYYY HH:mm:ss")
-			);
-			var d = moment.duration(ms);
-			var s = d.format("hh:mm:ss");
-			console.log(s);
-			/*
 			if (this.correcto) {
+				var formdata = new FormData();
+				formdata.append("nombre", this.Tarea.valor);
+				formdata.append("fecha", this.Fechai.valor);
+				formdata.append("horai", this.Horai.valor);
+
+				formdata.append("horafDG", this.HoraF.editar);
+				if (!this.HoraF.editar) {
+					formdata.append("horaf", this.HoraF.valor);
+				}
+				formdata.append("tipo", this.Recordar.tipo);
+				formdata.append("recordarG", this.Recordar.ver);
+				if (!this.Recordar.ver) {
+					formdata.append("recordar", this.Recordar.valor);
+				}
+
+				//
+				formdata.append("matter", this.Matter);
+				axios
+					.post(
+						"http://localhost/Calendario/index.php/calendario/save",
+						formdata
+					)
+					.then(response => {
+						this.rutas("Tarea Agregada");
+						console.log(response.data);
+						/*
+						start: "2019-10-24 11:30",
+			end: "2019-10-24 12:30",
+			title: "Salir",
+			content: '<i class="v-icon material-icons">shopping_cart</i>',
+			class: "leisure"
+						 */
+
+						inicio = response.data.fecha + " " + response.data.horai;
+						fin = response.data.fecha + " ";
+						if (response.data.horaf == null) {
+							fin += "12:00"
+						} else {
+							fin += response.data.horaf;
+						}
+						titulo = response.data.nombre;
+						if (response.data.tipo == "1") {
+							tipo = "danger";
+						} else if (response.data.tipo == "2") {
+							tipo = "warning";
+						} else {
+							tipo = "primary";
+						}
+
+						calendario.events.push({
+							start: inicio,
+							end: fin,
+							title: titulo,
+							class: tipo
+						});
+					})
+					.catch(error => {
+						//console.log(error.response);
+						if (error.response.status == 400) {
+							error.response.data.forEach(element => {
+								switch (element.campo) {
+									case 1:
+										this.Tarea.clase = "is-invalid";
+										this.Tarea.mjs = "Nombre no debe exceder a 25 caracteres";
+										break;
+									case 2:
+										this.Fechai.clase = "is-invalid";
+										this.Fechai.mjs =
+											"La Fecha inicial deber ser mayor o igual a la actual";
+										break;
+									case 3:
+										this.Horai.clase = "is-invalid";
+										this.Horai.mjs =
+											"La Hora inicial debe ser mayor a la actual";
+										break;
+									case 4:
+										this.Recordar.clase = "is-invalid";
+										this.Recordar.mjs =
+											"El recordatorio debe ser mayor a la fecha actual";
+										break;
+										//Eventos misma hora
+									case 7:
+										$("#exampleModal").modal("show");
+										console.log("--> " + this.Matter);
+										break;
+								}
+							});
+						}
+					});
 			} else {
 				alert("Datos mal Ingresados");
-			}*/
+			}
 			console.log("click");
-			/*
-			
-			var formdata = new FormData();
-			formdata.append("nombre", this.tarea);
-			formdata.append("fecha", this.fechai);
-			axios
-				.post("http://localhost/Calendario/index.php/calendario/save", formdata)
-				.then(response => {
-					console.log(response.data);
-				});
-				*/
+		},
+		//Fin Agregar Tarea
+		MattrF() {
+			console.log("no import");
+			this.Matter = true;
+			this.addTarea();
+			$("#exampleModal").modal("hide");
+		},
+		rutas(texto) {
+			Vue.use(Toasted);
+			let myToast = Vue.toasted.show(texto, {
+				// pass the icon name as string
+				icon: "check_circle",
+				type: "info",
+				theme: "outline",
+				duration: 5000
+			});
+			myToast.goAway(3000);
+			/*Vue.use(Toasted);
+			let toast = Vue.toasted.show("Toasted !!", {
+				theme: "toasted-primary",
+				position: "top-right",
+				duration: 5000
+			});*/
+
 		}
 	}
 });
@@ -406,26 +449,69 @@ var entrada = new Vue({
 
 -----------------------------------------------------------------------------------------------------------
 
-    public function save()
+   $public function save()
     {
+        $horaf = null;
+        $horafG = $this->input->post('horafDG');
+        if ($horafG == "false") {
+            # no dio horaf
+            $horaf = $this->input->post('horaf');
+        }
+
         $data = array(
             'nombre' => $this->input->post('nombre'),
             'fecha' => $this->input->post('fecha'),
+
+            'horai' => $this->input->post('horai'),
+            'horaf' => $horaf,
+            'tipo' => $this->input->post('tipo'),
         );
-        //echo $this->input->post('fecha');
-        $datos = json_encode($data);
-        echo $datos;
+        //$datos = json_encode($data, 400);
+        //echo $datos;
+
+        //$data['tipo'] = 0;
+        //$data = array_merge($data, $nuevo);
+        $nuevo = array(
+            'nombre' => 'Juan Perez',
+            'fecha' => '12-10-2019',
+        );
+        /*$datos = [
+        $data,
+        $nuevo,
+        ];*/
+        /*$datos[0] = $data;
+        $datos[1] = $nuevo;
+        $datos[] = $nuevo;*/
+        $matter = $this->input->post('matter');
+        $matter = "null";
+        $valor = 200;
+        if ($matter == "false") {
+            //ver  &&  si no choca
+            $datos[] = array('campo' => 7);
+            $valor = 400;
+        } else if ($matter == "true") {
+            //$datos[] = array('campo' => 2);
+            $valor = 200;
+        }
+
+        if ($valor == 200) {
+            $this->output->set_status_header(200)->set_content_type('application/json')->set_output(json_encode($data));
+        } else {
+            $this->output->set_status_header(400)->set_content_type('application/json')->set_output(json_encode($datos));
+        }
+
     }
 
 ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
- <div class="card-body" id="entrada">
+<div class="card-body" id="entrada">
                         <div>
                             <!--Nombre Tarea-->
                             <div class="form-group">
                                 <label for="">Nombrea Tarea</label>
                                 <input type="text" v-model="Tarea.valor" class="form-control" :class="[Tarea.clase]"
                                     placeholder="Nombre Tarea">
-                                <span v-show="Tarea.clase" class="text-danger"><b>Campo Requerido </b></span>
+                                <span v-show="Tarea.clase" class="text-danger"><b>Campo Requerido
+                                    </b>{{Tarea.mjs}}</span>
                             </div>
                             <!--Fecha Tarea-->
 
@@ -442,11 +528,6 @@ var entrada = new Vue({
                                     step="600">
                                 <span v-show="Horai.clase" class="text-danger"><b>Campo Requerido</b>
                                     {{Horai.mjs}}</span>
-                                <h4>Valor - {{Horai.valor}}</h4>
-                                <h4>Clase - {{Horai.clase}}</h4>
-                                <h4>min - {{Horai.min}}</h4>
-                                <h4>max - {{Horai.max}}</h4>
-                                <h4>mjs - {{Horai.mjs}}</h4>
                             </div>
                             <!-- hora final -->
                             <div class="form-group">
@@ -455,12 +536,6 @@ var entrada = new Vue({
                                     :readonly="HoraF.editar" step="600">
                                 <span v-show="HoraF.clase" class="text-danger"><b>Campo Requerido </b>{{HoraF.mjs}}
                                 </span>
-                                <h4>Valor - {{HoraF.valor}}</h4>
-                                <h4>Clase - {{HoraF.clase}}</h4>
-                                <h4>Ver - {{HoraF.editar}}</h4>
-                                <h4>min - {{HoraF.min}}</h4>
-                                <h4>max - {{HoraF.max}}</h4>
-                                <h4>mjs - {{HoraF.mjs}}</h4>
                             </div>
 
                             <!-- recordar -->
@@ -491,23 +566,54 @@ var entrada = new Vue({
                                         </b>{{Recordar.mjs}}
                                 </div>
                             </div>
-                            <h4>Valor - {{Recordar.valor}}</h4>
-                            <h4>Clase - {{Recordar.clase}}</h4>
-                            <h4>Ver - {{Recordar.ver}}</h4>
-                            <h4>tipo - {{Recordar.tipo}}</h4>
-                            <h4>C1 - {{Recordar.c1}}</h4>
+
                             <!-- fin recordar -->
 
                             <div class="form-group">
-                                <h6>tipo {{Recordar.tipo}}</h6>
-                                <h6>dado {{Recordar.dado}}</h6>
+
                                 <input type="submit" v-model="addT" value="enviar" v-on:click="addTarea"
                                     :class="['form-control', 'btn', (Recordar.tipo == 3) ? 'btn-primary': (Recordar.tipo == 2) ? 'btn-warning': 'btn-danger']">
                             </div>
                         </div>
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                            Launch demo modal
+                        </button>
+                        <h3>{{Tarea.valor}}</h3>
 
+                        <input type="submit" value="Hola" v-on:click="rutas('Hola !!')" class="btn btn-success">
+                        <!-- Modal Mismo dia -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+                            aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title" id="exampleModalLabel">Advetencia !!!</h5>
+                                        <button type="button" class="close text-white" data-dismiss="modal"
+                                            aria-label="Close">
+                                            <span aria-hidden="true">X</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        La hora del recordatorio coincide con otro recordatorio que ya se encuentra
+                                        agendado <br>
+                                        Si aun asi desea agregarlo de click en <b>Añadir de todas formas</b>. Sino de
+                                        click en <b>Cancelar</b>
+                                        <input type="text" class="form-control" v-model="Tarea.valor">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-primary" v-on:click="MattrF">Añadir
+                                            de todas
+                                            formas</button>
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Cancelar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Modal Mismo dia-->
                     </div>
-
+                    <!-- /.card-body -->
 
 ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
