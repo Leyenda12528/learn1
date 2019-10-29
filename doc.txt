@@ -116,6 +116,9 @@ var calendario = new Vue({
 		showDialog: false,
 		events: []
 	},
+	mounted() {
+		this.cargar();
+	},
 	methods: {
 		onEventClick(event, e) {
 			this.selectedEvent = event
@@ -124,6 +127,20 @@ var calendario = new Vue({
 			$("#modalEditar").modal("show");
 			// Prevent navigating to narrower view (default vue-cal behavior).
 			e.stopPropagation()
+		},
+		//obtener datos de la base 
+		cargar() {
+			axios.get("http://localhost/Calendario/index.php/calendario/get")
+				.then(function (response) {
+					// handle success
+					console.log(response);
+					console.log(response.data);
+				})
+				.catch(function (error) {
+					// handle error
+					console.log(error.response);
+					console.log(error.response.data);
+				});;
 		}
 	}
 });
@@ -144,8 +161,8 @@ var entrada = new Vue({
 		Horai: {
 			valor: "",
 			clase: "",
-			min: "06:00",
-			max: "17:30",
+			min: "00:00",
+			max: "23:58",
 			mjs: ""
 		},
 		HoraF: {
@@ -153,7 +170,7 @@ var entrada = new Vue({
 			clase: "",
 			editar: true,
 			min: "",
-			max: "18:00"
+			max: "23:59"
 		},
 		Recordar: {
 			valor: 1,
@@ -328,7 +345,7 @@ var entrada = new Vue({
 				formdata.append("fecha", this.Fechai.valor);
 				formdata.append("horai", this.Horai.valor);
 
-				formdata.append("horafDG", this.HoraF.editar);
+				formdata.append("horafG", this.HoraF.editar);
 				if (!this.HoraF.editar) {
 					formdata.append("horaf", this.HoraF.valor);
 				}
@@ -342,7 +359,7 @@ var entrada = new Vue({
 				formdata.append("matter", this.Matter);
 				axios
 					.post(
-						"http://localhost/Calendario/index.php/calendario/save",
+						"http://localhost/Calendario/index.php/calendario/probar",
 						formdata
 					)
 					.then(response => {
@@ -356,17 +373,12 @@ var entrada = new Vue({
 			class: "leisure"
 						 */
 
-						inicio = response.data.fecha + " " + response.data.horai;
-						fin = response.data.fecha + " ";
-						if (response.data.horaf == null) {
-							fin += "12:00"
-						} else {
-							fin += response.data.horaf;
-						}
-						titulo = response.data.nombre;
-						if (response.data.tipo == "1") {
+						inicio = response.data.fechaEvento;
+						fin = response.data.fechaFinEvento;
+						titulo = response.data.nombreEvento;
+						if (response.data.tipoRecordatorio == "1") {
 							tipo = "danger";
-						} else if (response.data.tipo == "2") {
+						} else if (response.data.tipoRecordatorio == "2") {
 							tipo = "warning";
 						} else {
 							tipo = "primary";
@@ -380,13 +392,14 @@ var entrada = new Vue({
 						});
 					})
 					.catch(error => {
-						//console.log(error.response);
+						console.log(error.response);
+						console.log(error.response.data);
 						if (error.response.status == 400) {
 							error.response.data.forEach(element => {
 								switch (element.campo) {
 									case 1:
 										this.Tarea.clase = "is-invalid";
-										this.Tarea.mjs = "Nombre no debe exceder a 25 caracteres";
+										this.Tarea.mjs = "Nombre debe ser de 5 a 25 caracteres";
 										break;
 									case 2:
 										this.Fechai.clase = "is-invalid";
@@ -399,9 +412,19 @@ var entrada = new Vue({
 											"La Hora inicial debe ser mayor a la actual";
 										break;
 									case 4:
+										this.HoraF.clase = "is-invalid";
+										this.HoraF.mjs =
+											"La Hora final debe ser mayor a la Hora inicial";
+										break;
+									case 5:
 										this.Recordar.clase = "is-invalid";
 										this.Recordar.mjs =
-											"El recordatorio debe ser mayor a la fecha actual";
+											"El recordatorio debe ser mayor a la fecha actual (Verifique Hora o Dia)";
+										break;
+									case 6:
+										this.Recordar.clase = "is-invalid";
+										this.Recordar.mjs =
+											"Modifique primero la Fecha y/o Hora inicial";
 										break;
 										//Eventos misma hora
 									case 7:
@@ -447,61 +470,145 @@ var entrada = new Vue({
 
 
 
+-------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
 
-   $public function save()
+  public function probar()
     {
-        $horaf = null;
-        $horafG = $this->input->post('horafDG');
-        if ($horafG == "false") {
-            # no dio horaf
-            $horaf = $this->input->post('horaf');
+        date_default_timezone_set('America/El_Salvador');
+        $nombreEvento = $this->input->post('nombre');
+        $fechaEvento = $this->input->post('fecha');
+        $horaEvento = $this->input->post('horai');
+        $tipoRecuerdo = $this->input->post('tipo');
+        $horaFinal = null;
+        $estado3 = $this->input->post('horafG');
+        if ($estado3 == 'false') {
+            $horaFinal = $this->input->post('horaf');
+        }
+        $cantidadRestar = null;
+        $estado2 = $this->input->post('recordarG');
+        if ($estado2 == 'false') {
+            $cantidadRestar = $this->input->post('recordar');
+        }
+        #
+        #        VALIDACIONES
+        #
+        $datosCorrectos = 0;
+        //Validando nombre del evento
+        if (strlen($nombreEvento) > 4 && strlen($nombreEvento) < 26) {
+        } else {
+            $datosCorrectos++;
+            $datos[] = array('campo' => 1);
         }
 
-        $data = array(
-            'nombre' => $this->input->post('nombre'),
-            'fecha' => $this->input->post('fecha'),
+        $fechaActual = date("Y-m-d", time());
+        $horaActual = date("H:i", time());
 
-            'horai' => $this->input->post('horai'),
-            'horaf' => $horaf,
-            'tipo' => $this->input->post('tipo'),
-        );
-        //$datos = json_encode($data, 400);
-        //echo $datos;
+        $fechaActualTotal = $fechaActual . " " . $horaActual;
+        $fechaInicioEvento = $fechaEvento . " " . $horaEvento;
+        $fechaFinEvento = null;
 
-        //$data['tipo'] = 0;
-        //$data = array_merge($data, $nuevo);
-        $nuevo = array(
-            'nombre' => 'Juan Perez',
-            'fecha' => '12-10-2019',
-        );
-        /*$datos = [
-        $data,
-        $nuevo,
-        ];*/
-        /*$datos[0] = $data;
-        $datos[1] = $nuevo;
-        $datos[] = $nuevo;*/
-        $matter = $this->input->post('matter');
-        $matter = "null";
-        $valor = 200;
-        if ($matter == "false") {
-            //ver  &&  si no choca
-            $datos[] = array('campo' => 7);
-            $valor = 400;
-        } else if ($matter == "true") {
-            //$datos[] = array('campo' => 2);
-            $valor = 200;
+        //Validando solo fecha del evento
+        if (strtotime($fechaEvento) >= strtotime($fechaActual)) {
+        } else {
+            $datosCorrectos++;
+            $datos[] = array('campo' => 2);
         }
+        
+        //validar hora inicial del evento si es igual a la fecha actual
+        if (strtotime($fechaEvento) == strtotime($fechaActual)) {
+            //si entra
+            if (strtotime($horaEvento) > strtotime($horaActual)) {
+            } else {
+                $datosCorrectos++;
+                $datos[] = array('campo' => 3);
+            }
+        }
+        //validar hora final del evento
+        if ($horaFinal != null) {
+            if (strtotime($horaFinal) > strtotime($horaEvento)) {
+                $fechaFinEvento = $fechaEvento . " " . $horaFinal;
+            } else {
+                $datosCorrectos++;
+                $datos[] = array('campo' => 4);
+            }
+        }
+        //quedara null si no hay recordatorio es decir  == 3
+        $fechaRecuerdo = null;
+        //validar recordatorio si es 1 o 2
+        if ($cantidadRestar != null) {
+            //ver primero que la fecha inicio del evento sea mayor a la fecha actual
+            if (strtotime($fechaInicioEvento) >= strtotime($fechaActualTotal)) {
+                if ($tipoRecuerdo == "1") {
+                    # Dias...
+                    $restar = "-" . $cantidadRestar . " days";
+                } else {
+                    # horas...
+                    $restar = "-" . $cantidadRestar . " hours";
+                }
+                // ver que la fecha+hora recuerdo sea mayor a la fecha+hroa actual para poder recordar
+                $fechaRecuerdoValidar = strtotime($restar, strtotime($fechaInicioEvento));
+                $fechaActualValidar = strtotime($fechaActualTotal);
+                if ($fechaRecuerdoValidar > $fechaActualValidar) {
+                    $fechaRecuerdo = date("d-m-Y H:i:s", $fechaRecuerdoValidar);
+                } else {
+                    $datosCorrectos++;
+                    $datos[] = array('campo' => 5);
+                }
+            } else {
+                $datosCorrectos++;
+                $datos[] = array('campo' => 6); //el mismo 5
+            }
 
-        if ($valor == 200) {
+        }
+        if ($datosCorrectos==0) {
+            #
+            # tdodo bien...   Datos que se envian a la base
+            #
+            $fechaInicioEvento = date("d-m-Y H:i:s", strtotime($fechaInicioEvento));
+            if ($horaFinal!=null) {
+                $fechaFinEvento = date("d-m-Y H:i:s", strtotime($fechaFinEvento));
+            }
+            $data = array(
+                'nombreEvento' => $nombreEvento,
+                'fechaEvento' => $fechaInicioEvento,
+                'fechaFinEvento' => $fechaFinEvento,
+                'fechaRecordatorio' => $fechaRecuerdo,
+                'tipoRecordatorio' => $tipoRecuerdo,
+                'estado' => 1,
+            );
+            $this->calendario_model->agregar($data);
+            #
+            # tdodo bien...   Datos que se envian a la vista
+            #
+            $fechaInicioEvento = date("Y-m-d H:i:s", strtotime($fechaInicioEvento));
+            
+            if ($horaFinal == null) {
+                $fechaFinEvento = strtotime('+1 hours',strtotime($fechaInicioEvento));
+                $fechaFinEvento = date("Y-m-d H:i:s", $fechaFinEvento);
+            }else{
+                $fechaFinEvento = date("Y-m-d H:i:s", strtotime($fechaFinEvento));
+            }
+            if ($cantidadRestar!= null) {
+                $fechaRecuerdo = date("Y-m-d H:i:s", strtotime($fechaRecuerdo));
+            }
+
+            $data = array(
+                'nombreEvento' => $nombreEvento,
+                'fechaEvento' => $fechaInicioEvento,
+                'fechaFinEvento' => $fechaFinEvento,
+                'fechaRecordatorio' => $fechaRecuerdo,
+                'tipoRecordatorio' => $tipoRecuerdo,
+                'estado' => 1,
+            );
             $this->output->set_status_header(200)->set_content_type('application/json')->set_output(json_encode($data));
         } else {
+            # algo mal...
             $this->output->set_status_header(400)->set_content_type('application/json')->set_output(json_encode($datos));
         }
 
     }
-
+  
 ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 <div class="card-body" id="entrada">
                         <div>
