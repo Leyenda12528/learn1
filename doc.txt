@@ -123,7 +123,7 @@ var calendario = new Vue({
 		onEventClick(event, e) {
 			this.selectedEvent = event
 			this.showDialog = true
-			console.log("hola -> " + this.selectedEvent.title);
+			console.log("hola -> " + this.selectedEvent.title + " -<>- " + this.selectedEvent.recordatorio);
 			$("#modalEditar").modal("show");
 			// Prevent navigating to narrower view (default vue-cal behavior).
 			e.stopPropagation()
@@ -135,11 +135,59 @@ var calendario = new Vue({
 					// handle success
 					console.log(response);
 					console.log(response.data);
+					var Eventos = [];
+					response.data.forEach(element => {
+						var tipo = "";
+						var tipoR = element.tipoRecordatorio;
+						switch (tipoR) {
+							case "1":
+								tipo = "danger";
+								break;
+							case "2":
+								tipo = "warning";
+								break;
+							case "3":
+								tipo = "primary";
+								break;
+						}
+						//console.log(element.nombreEvento);
+						//console.log(element.fechaEvento);
+						//console.log(element.fechaFinEvento);
+						//console.log(tipo);
+						var tipoA = {
+							start: element.fechaEvento,
+							end: element.fechaFinEvento,
+							title: element.nombreEvento,
+							class: tipo,
+							recordatorio: element.fechaRecordatorio
+						}
+						Eventos.push(tipoA);
+						//console.log(tipoA);						
+						/**
+						 * start: "2019-10-24 11:30",
+						end: "2019-10-24 12:30",
+						title: "Salir",
+						content: '<i class="v-icon material-icons">shopping_cart</i>',
+						class: "leisure"
+						 */
+					});
+					console.log(Eventos);
+
+
+					this.events.push({
+						start: '2019-11-02 03:00',
+						end: '2019-11-02 04:00',
+						title: 'estatico1',
+						class: 'primary'
+					});
+
+					//this.events = Eventos;
+					console.log("Agregados");
 				})
 				.catch(function (error) {
 					// handle error
 					console.log(error.response);
-					console.log(error.response.data);
+					//console.log(error.response.data);
 				});;
 		}
 	}
@@ -390,6 +438,7 @@ var entrada = new Vue({
 							title: titulo,
 							class: tipo
 						});
+						this.limpiar();
 					})
 					.catch(error => {
 						console.log(error.response);
@@ -447,6 +496,8 @@ var entrada = new Vue({
 			this.addTarea();
 			$("#exampleModal").modal("hide");
 		},
+		// fin de mattrf
+		// rutas
 		rutas(texto) {
 			Vue.use(Toasted);
 			let myToast = Vue.toasted.show(texto, {
@@ -464,7 +515,43 @@ var entrada = new Vue({
 				duration: 5000
 			});*/
 
+		},
+		//fin de rutas
+		// LIMPIAR
+		limpiar() {
+			this.Tarea.valor = "";
+			this.Tarea.clase = "";
+			this.Tarea.mjs = "";
+
+			this.Fechai.valor = "";
+			this.Fechai.clase = "";
+			this.Fechai.mjs = "";
+
+			this.Horai.valor = "";
+			this.Horai.clase = "";
+			this.Horai.min = "00:00";
+			this.Horai.max = "23.58";
+			this.Horai.mjs = "";
+
+			this.HoraF.valor = "";
+			this.HoraF.clase = "";
+			this.HoraF.editar = true;
+			this.HoraF.min = "";
+			this.HoraF.max = "23.59";
+
+			this.Recordar.valor = 1;
+			this.Recordar.clase = "";
+			this.Recordar.tipo = 3;
+			this.Recordar.ver = true;
+			this.Recordar.c1 = false;
+			this.Recordar.dado = 3;
+			this.Recordar.mjs = "";
+
+			this.addT = "Añadir";
+			this.correcto = false;
+			this.Matter = false;
 		}
+		//fin de limpiar
 	}
 });
 
@@ -473,7 +560,7 @@ var entrada = new Vue({
 -------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
 
-  public function probar()
+ public function probar()
     {
         date_default_timezone_set('America/El_Salvador');
         $nombreEvento = $this->input->post('nombre');
@@ -490,6 +577,15 @@ var entrada = new Vue({
         if ($estado2 == 'false') {
             $cantidadRestar = $this->input->post('recordar');
         }
+        $importa= $this->input->post('matter');
+        if ($importa == "false") {
+            # code...
+            $importa2 = false;
+        } else {
+            # code...
+            $importa2 = true;
+        }
+        
         #
         #        VALIDACIONES
         #
@@ -550,7 +646,7 @@ var entrada = new Vue({
                 $fechaRecuerdoValidar = strtotime($restar, strtotime($fechaInicioEvento));
                 $fechaActualValidar = strtotime($fechaActualTotal);
                 if ($fechaRecuerdoValidar > $fechaActualValidar) {
-                    $fechaRecuerdo = date("d-m-Y H:i:s", $fechaRecuerdoValidar);
+                    $fechaRecuerdo = date("Y-m-d H:i:s", $fechaRecuerdoValidar);
                 } else {
                     $datosCorrectos++;
                     $datos[] = array('campo' => 5);
@@ -561,13 +657,23 @@ var entrada = new Vue({
             }
 
         }
+        if (true) {
+            # code...
+            if (!$importa2) {
+                # code...
+                $datosCorrectos++;
+                $datos[] = array('campo' => 7);
+            }
+        }
+        
+
         if ($datosCorrectos==0) {
             #
             # tdodo bien...   Datos que se envian a la base
             #
-            $fechaInicioEvento = date("d-m-Y H:i:s", strtotime($fechaInicioEvento));
+            //$fechaInicioEvento = date("d-m-Y H:i:s", strtotime($fechaInicioEvento));
             if ($horaFinal!=null) {
-                $fechaFinEvento = date("d-m-Y H:i:s", strtotime($fechaFinEvento));
+                //$fechaFinEvento = date("d-m-Y H:i:s", strtotime($fechaFinEvento));
             }
             $data = array(
                 'nombreEvento' => $nombreEvento,
@@ -577,7 +683,7 @@ var entrada = new Vue({
                 'tipoRecordatorio' => $tipoRecuerdo,
                 'estado' => 1,
             );
-            $this->calendario_model->agregar($data);
+            //$this->calendario_model->agregar($data);
             #
             # tdodo bien...   Datos que se envian a la vista
             #
@@ -590,7 +696,7 @@ var entrada = new Vue({
                 $fechaFinEvento = date("Y-m-d H:i:s", strtotime($fechaFinEvento));
             }
             if ($cantidadRestar!= null) {
-                $fechaRecuerdo = date("Y-m-d H:i:s", strtotime($fechaRecuerdo));
+                //$fechaRecuerdo = date("Y-m-d H:i:s", strtotime($fechaRecuerdo));
             }
 
             $data = array(
@@ -608,9 +714,9 @@ var entrada = new Vue({
         }
 
     }
-  
 ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-<div class="card-body" id="entrada">
+ <!-- inputs de entradas -->
+                    <div class="card-body" id="entrada">
                         <div>
                             <!--Nombre Tarea-->
                             <div class="form-group">
@@ -638,7 +744,8 @@ var entrada = new Vue({
                             </div>
                             <!-- hora final -->
                             <div class="form-group">
-                                <label><input v-on:click="verHoraF" type="checkbox">Hora final</label>
+                                <label><input v-on:click="verHoraF" type="checkbox" :checked="!HoraF.editar">Hora
+                                    final</label>
                                 <input type="time" v-model="HoraF.valor" class="form-control" :class="[HoraF.clase]"
                                     :readonly="HoraF.editar" step="600">
                                 <span v-show="HoraF.clase" class="text-danger"><b>Campo Requerido </b>{{HoraF.mjs}}
@@ -647,7 +754,8 @@ var entrada = new Vue({
 
                             <!-- recordar -->
                             <div class="form-group">
-                                <label><input v-on:click="verRecordar" type="checkbox">¿ Recordar
+                                <label><input v-on:click="verRecordar" type="checkbox" :checked="!Recordar.ver">¿
+                                    Recordar
                                     ?</label>
                             </div>
                             <div :class="['form-group', Recordar.ver ? 'clase' : '']">
@@ -706,14 +814,13 @@ var entrada = new Vue({
                                         agendado <br>
                                         Si aun asi desea agregarlo de click en <b>Añadir de todas formas</b>. Sino de
                                         click en <b>Cancelar</b>
-                                        <input type="text" class="form-control" v-model="Tarea.valor">
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-primary" v-on:click="MattrF">Añadir
                                             de todas
                                             formas</button>
                                         <button type="button" class="btn btn-secondary"
-                                            data-dismiss="modal">Cancelar</button>
+                                            data-dismiss="modal" v-on:click="limpiar">Cancelar</button>
                                     </div>
                                 </div>
                             </div>
@@ -721,8 +828,43 @@ var entrada = new Vue({
                         <!-- Modal Mismo dia-->
                     </div>
                     <!-- /.card-body -->
+                </div>
+
+
+            </div>
+            <!-- Modal Editar -->
+            <div class="modal fade" id="modalEditar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title" id="exampleModalLabel">Evento: </h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">X</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            La hora del recordatorio coincide con otro recordatorio que ya se encuentra
+                            agendado <br>
+                            Si aun asi desea agregarlo de click en <b>Añadir de todas formas</b>. Sino de
+                            click en <b>Cancelar</b>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" v-on:click="MattrF">Añadir
+                                de todas
+                                formas</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal Editar-->
 
 ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+
+
+
+
 
 
 
