@@ -1,0 +1,55 @@
+
+        if ($this->input->is_ajax_request()) {}
+
+$this->output->set_status_header(200)->set_content_type('application/json')->set_output(json_encode($datos));
+
+$datA[] = array('valido' => true);
+
+
+------------------ models
+$this->load->database();
+
+
+$this->db->insert('Notificaciones', $datos);
+
+$this->db->insert('Calendario', $datos);
+        return $this->db->insert_id();
+
+return $this->db->count_all($this->table);
+
+
+$this->db->where('idDiaCalendario', $data['id']);
+        $this->db->set('nombreEvento', $data['nombre']);
+        $this->db->set('fechaEvento', $data['inicio']);
+        $this->db->set('fechaFinEvento', $data['fin']);
+        $this->db->set('fechaRecordatorio', $data['recordatorio']);
+        $this->db->set('tipoRecordatorio', $data['tipo']);
+        return $this->db->update('Calendario');
+
+
+$resultados = $this->db->query('SELECT * FROM Calendario WHERE idUsuario = $idUsuario') or die($this->db->error());
+if ($resultados) {
+            return $resultados->fetch_all(MYSQLI_ASSOC);
+        } else {
+            return false;
+        }
+
+
+ $this->db->select('*');
+        $this->db->from('Calendario');
+        $where = "estado = 1";
+        $this->db->where($where);
+        $query = $this->db->get();
+        return $query->result();
+
+
+ $this->db->select('COUNT(*) AS Cantidad');
+        $this->db->from('Calendario');
+        $where = "estado = 1 AND fechaEvento = " . $fecha;
+        $this->db->where($where);
+        $query = $this->db->get();
+        return $query->result();
+
+
+
+
