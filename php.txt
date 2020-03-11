@@ -49,6 +49,57 @@ if ($resultados) {
         $this->db->where($where);
         $query = $this->db->get();
         return $query->result();
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+require_once(APPPATH.'libraries/Classes/PHPExcel/IOFactory.php');
+		//  Read your Excel workbook
+		try {
+			$inputFileType = PHPExcel_IOFactory::identify($_FILES['file']['tmp_name']);
+			$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+			$objPHPExcel = $objReader->load($_FILES['file']['tmp_name']);
+		} catch(Exception $e) {
+			die('Error loading file "'.pathinfo($_FILES['file']['tmp_name'],PATHINFO_BASENAME).'": '.$e->getMessage());
+		}
+
+		//  Get worksheet dimensions
+		$sheet = $objPHPExcel->getSheet(0); 
+		$highestRow = $sheet->getHighestRow(); 
+		$highestColumn = $sheet->getHighestColumn();
+		//echo $highestRow."--".$highestColumn;
+
+		//  Loop through each row of the worksheet in turn
+		for ($row = 2; $row <= $highestRow; $row++){ 
+			//  Read a row of data into an array
+			$rowData = $sheet->rangeToArray('A' . $row . ':' . $highestColumn . $row,NULL,TRUE,FALSE);
+			//  Insert row data array into your database of choice here
+			//print_r($rowData[0]);
+			//print_r($rowData[0][0]);
+			$datos[] = array(
+				'ID' => $rowData[0][0],
+				'Dia' => $rowData[0][1],
+				'Ciudad' => $rowData[0][2],
+				'Temperatura' => $rowData[0][3],
+				'Vel_Viento' => $rowData[0][4],
+				'Evento' => $rowData[0][5]
+			);
+			//echo $rowData[0][0];
+		}
+		echo json_encode($datos);
+	}
+
+
+
+
+
+
+
+
+
+
 
 
 
