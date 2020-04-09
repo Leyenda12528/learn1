@@ -878,10 +878,48 @@ var evento = this.events.find(e => e.id == ideditado);
 
 
 
+------------------------------------
+ORDENAR POR ALGUNA PROPIEDAD
+GRUPOS = []
+//ordenarlos alfabeticamente
+Grupos.sort((a, b) => a.Name !== b.Name ? a.Name < b.Name ? -1 : 1 : 0);
 
+//encontrar un objeto dentro de un array de objetos
+var GrupoV = Grupos.find(e => e.Name == Data.grupo);
 
+//ordenar por numeros
+Dias.sort((a, b) => a.Name-b.Name );
 
+//validacion de numeros
+validacion =/^([0-9])+$/;
+if (!validacion.test(data.text)) {
+	data.customItem = null;
+	return
+}
+//conversion de string to numero
 
+var TipoContri = parseInt(Data.idtipo);
+// peticion ajax
+var hola = $.ajax({
+                        type: "POST",
+                        url: "<?=base_url()?>contabilidad/getDataCA",
+                        data: {
+                            "tipo" :  Tipo,
+                            "ID" :  e.data.id
+                        },
+                        dataType: "json",
+                        success:function (respuesta) {
+                            if (respuesta[0].valido == true) {
+                                editarPopup(respuesta);
+                            }
+                                else if (respuesta[0].valido == false){
+                                DevExpress.ui.notify("Error al traer datos, contactar Soporte Tecnico","warning" ,6000);
+                            }
+                        },
+                        error: function (params){
+                            DevExpress.ui.notify("Error al traer, contactar Soporte Tecnico","warning" ,6000);
+                        }
+                    });
 
 
 
