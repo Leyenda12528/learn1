@@ -902,7 +902,7 @@ var TipoContri = parseInt(Data.idtipo);
 // peticion ajax
 var hola = $.ajax({
                         type: "POST",
-                        url: "<?=base_url()?>contabilidad/getDataCA",
+                        url: "<?=base_url()?>",
                         data: {
                             "tipo" :  Tipo,
                             "ID" :  e.data.id
@@ -910,14 +910,14 @@ var hola = $.ajax({
                         dataType: "json",
                         success:function (respuesta) {
                             if (respuesta[0].valido == true) {
-                                editarPopup(respuesta);
+
                             }
                                 else if (respuesta[0].valido == false){
-                                DevExpress.ui.notify("Error al traer datos, contactar Soporte Tecnico","warning" ,6000);
+
                             }
                         },
                         error: function (params){
-                            DevExpress.ui.notify("Error al traer, contactar Soporte Tecnico","warning" ,6000);
+
                         }
                     });
 
